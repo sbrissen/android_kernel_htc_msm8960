@@ -1026,4 +1026,14 @@ config TOUCHSCREEN_SYNAPTICS_3K
 	help
 	  This enables support for Synaptics RMI4 over I2C based touchscreens.
 
+config TOUCHSCREEN_MAX1187X
+        tristate "Maxim max1187X touchscreen"
+        depends on I2C
+        help
+          Say Y here if you have a Maxim max11871 touchscreen connected
+          to your system. max11871 conforms to the Maxim Touch Protocol
+          (MTP) defined by Maxim.
+
+          If unsure, say N.
+
 endif

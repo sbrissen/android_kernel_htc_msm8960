@@ -33,6 +33,7 @@
 #include <linux/mfd/pm8xxx/pm8921.h>
 #include <linux/mfd/pm8xxx/pm8921.h>
 #include <mach/htc_headset_mgr.h>
+#include <mach/board_htc.h>
 #include <linux/wakelock.h>
 #include <mach/htc_acoustic_pmic.h>
 #include <linux/jiffies.h>

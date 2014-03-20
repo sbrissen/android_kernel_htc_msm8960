@@ -39,7 +39,7 @@
 #define TPA9887_WRITE_L_CONFIG	_IOW(TPA9887_IOCTL_MAGIC, 0x04, unsigned int)
 #define TPA9887_READ_L_CONFIG	_IOW(TPA9887_IOCTL_MAGIC, 0x05, unsigned int)
 #define TPA9887_KERNEL_LOCK    _IOW(TPA9887_IOCTL_MAGIC, 0x06, unsigned int)
-#define DEBUG (0)
+#define DEBUG (1)
 
 static struct i2c_client *this_client;
 static struct tfa9887_platform_data *pdata;
@@ -167,6 +167,7 @@ unsigned char amp_off[1][3] = {
 static int tfa9887_i2c_write(char *txData, int length)
 {
 	int rc;
+	
 	struct i2c_msg msg[] = {
 		{
 			.addr = this_client->addr,
@@ -175,13 +176,13 @@ static int tfa9887_i2c_write(char *txData, int length)
 			.buf = txData,
 		},
 	};
-
+pr_info("%s: SBRISSEN", __func__);
 	rc = i2c_transfer(this_client->adapter, msg, 1);
 	if (rc < 0) {
 		pr_err("%s: transfer error %d\n", __func__, rc);
 		return rc;
 	}
-
+pr_info("%s: SBRISSEN2", __func__);
 #if DEBUG
 	{
 		int i = 0;
@@ -256,17 +257,23 @@ void set_tfa9887_spkamp(int en, int dsp_mode)
 
 	pr_info("%s: en = %d dsp_enabled = %d\n", __func__, en, dsp_enabled);
 	mutex_lock(&spk_amp_lock);
+	pr_info("%s: SBRISSEN",__func__);
 	if (en && !last_spkamp_state) {
 		last_spkamp_state = 1;
-		
+		pr_info("%s: SBRISSEN -2",__func__);
 		if (dsp_enabled == 0) {
 			for (i=0; i <3 ; i++)
+				pr_info("%s: SBRISSEN -2-1",__func__);
 				tfa9887_i2c_write(cf_dsp_bypass[i], 3);
-                
+                pr_info("%s: SBRISSEN -2-2",__func__);
 				tfa9887_i2c_write(SPK_CR,1);
+				pr_info("%s: SBRISSEN -2-3",__func__);
 				tfa9887_i2c_read(SPK_CR+1,2);
+				pr_info("%s: SBRISSEN -2-4",__func__);
 				SPK_CR[1] |= 0x4; 
+				pr_info("%s: SBRISSEN -2-5",__func__);
 				tfa9887_i2c_write(SPK_CR,3);
+				pr_info("%s: SBRISSEN -2-6",__func__);
 		} else {
 			
 			
@@ -286,6 +293,7 @@ void set_tfa9887_spkamp(int en, int dsp_mode)
 			tfa9887_i2c_write(power_data, 3);
 		}
 	} else if (!en && last_spkamp_state) {
+		pr_info("%s: SBRISSEN-3",__func__);
 		last_spkamp_state = 0;
 		if (dsp_enabled == 0) {
 			tfa9887_i2c_write(amp_off[0], 3);
@@ -311,7 +319,9 @@ void set_tfa9887_spkamp(int en, int dsp_mode)
 			tfa9887_i2c_write(power_data, 3);
 		}
 	}
+	pr_info("%s: SBRISSEN-4",__func__);
 	mutex_unlock(&spk_amp_lock);
+	pr_info("%s: SBRISSEN-5",__func__);
 }
 
 static long tfa9887_ioctl(struct file *file, unsigned int cmd,

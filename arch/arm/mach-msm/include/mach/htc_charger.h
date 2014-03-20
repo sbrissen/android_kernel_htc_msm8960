@@ -90,6 +90,7 @@ struct htc_charger {
 	const char *name;
 	int ready;
 	int sw_safetytimer;
+	struct t_cable_status_notifier *notif;
 	int (*get_charging_source)(int *result);
 	int (*get_charging_enabled)(int *result);
 	int (*event_notify)(enum htc_extchg_event_type etype);

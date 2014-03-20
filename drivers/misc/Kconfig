@@ -733,6 +733,12 @@ config AMP_RT5501
 	help
 	  RichTek RT5501 AMP Driver implemented by HTC.
 
+config AMP_TPA6185
+        tristate "TI TPA6185 AMP Driver"
+	depends on I2C=y
+        help
+          TI TPA6185 AMP Driver implemented by HTC.
+
 config AMP_RT5501_DELAY
 	tristate "RichTek RT5501 AMP Delay Workaround"
 	depends on I2C=y
@@ -748,5 +754,5 @@ source "drivers/misc/lis3lv02d/Kconfig"
 source "drivers/misc/carma/Kconfig"
 source "drivers/misc/altera-stapl/Kconfig"
 source "drivers/misc/slimport_anx7808/Kconfig"
-
+source "drivers/misc/fpr/Kconfig"
 endmenu

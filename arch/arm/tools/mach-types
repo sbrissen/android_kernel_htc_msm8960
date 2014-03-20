@@ -1202,3 +1202,7 @@ m7_u			MACH_M7_U		M7_U			4356
 m7_wlv			MACH_M7_WLV		M7_WLV			4358
 apq8064_mako		MACH_APQ8064_MAKO	APQ8064_MAKO		7800
 msm8930_evt		MACH_MSM8930_EVT	MSM8930_EVT		4558
+t6_ul                   MACH_T6_UL              T6_UL                   4642
+t6_uhl                  MACH_T6_UHL             T6_UHL                  4643
+t6_wl                   MACH_T6_WL              T6_WL                   4645
+t6_whl                  MACH_T6_WHL             T6_WHL                  4646
