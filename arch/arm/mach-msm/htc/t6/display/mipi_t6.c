@@ -23,6 +23,7 @@
 //#define MDP_GAMMA
 #ifdef MDP_GAMMA
 #include "mdp_gamma_renesas.h"
+#include "mdp_gamma_renesas_c3.h"
 #endif
 #include "mipi_t6.h"
 
@@ -671,6 +672,7 @@ static void scorpius_jdi_renesas_panel_init(void)
 	pwm_max = 255;
 }
 
+char *board_cid(void);
 static void scorpius_jdi_panel_init_c3(void)
 {
 	panel_on_cmds = jdi_renesas_cmd_on_cmds_c3;
@@ -702,8 +704,15 @@ static void scorpius_jdi_panel_init_c3(void)
 	set_cabc_Camera_cmds_count = ARRAY_SIZE(sharp_renesas_set_cabc_Video_cmds);
 #endif
 #ifdef MDP_GAMMA
-	mdp_gamma = mdp_gamma_renesas_c3;
-	mdp_gamma_count = ARRAY_SIZE(mdp_gamma_renesas_c3);
+	if (!strncmp(board_cid(), "CWS__001", 8) ||
+		!strncmp(board_cid(), "VZW__001", 8) ||
+		!strncmp(board_cid(), "SPCS_001", 8)) {
+		mdp_gamma = mdp_gamma_renesas;
+		mdp_gamma_count = ARRAY_SIZE(mdp_gamma_renesas);
+	} else {
+		mdp_gamma = mdp_gamma_renesas_c3;
+		mdp_gamma_count = ARRAY_SIZE(mdp_gamma_renesas_c3);
+	}
 #endif
 	pwm_min = 6;
 	pwm_default = 81;
