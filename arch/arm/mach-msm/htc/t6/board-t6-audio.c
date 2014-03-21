@@ -34,7 +34,7 @@
 #include <mach/htc_acoustic_8960.h>
 #include <linux/tfa9887.h>
 #include <linux/rt5501.h>
-#include <linux/tpa6185.h>
+//#include <linux/tpa6185.h>
 #include <sound/q6asm.h>
 #include "board-t6.h"
 
@@ -97,8 +97,8 @@ enum {
 };
 
 static int msm_spk_control;
-static int msm_ext_bottom_spk_pamp;
-static int msm_ext_top_spk_pamp;
+//static int msm_ext_bottom_spk_pamp;
+//static int msm_ext_top_spk_pamp;
 static int msm_hs_pamp;
 static int msm_rcv_pamp;
 static int msm_slim_0_rx_ch = 1;
@@ -194,7 +194,7 @@ static void param_set_mask(struct snd_pcm_hw_params *p, int n, unsigned bit)
 
 static struct mutex cdc_mclk_mutex;
 
-/*static void msm_enable_ext_spk_amp_gpio(u32 spk_amp_gpio)
+static void msm_enable_ext_spk_amp_gpio(u32 spk_amp_gpio)
 {
 	int ret = 0;
 
@@ -228,15 +228,16 @@ static struct mutex cdc_mclk_mutex;
 		}
 
 	}
-}*/
+}
 
 static void msm_ext_spk_power_amp_on(u32 spk)
 {
 	if (spk & (RCV_AMP_POS | RCV_AMP_NEG)) {
+
 		if ((msm_rcv_pamp & RCV_AMP_POS) &&
 			(msm_rcv_pamp & RCV_AMP_NEG)) {
 
-			pr_info("%s() HS Ampl already "
+			pr_debug("%s() RCV Ampl already"
 				"turned on. spk = 0x%08x\n", __func__, spk);
 			return;
 		}
@@ -246,22 +247,16 @@ static void msm_ext_spk_power_amp_on(u32 spk)
 		if ((msm_rcv_pamp & RCV_AMP_POS) &&
 			(msm_rcv_pamp & RCV_AMP_NEG)) {
 
-
-			pr_info("rcv amp on++");
-			gpio_direction_output(PM8921_GPIO_PM_TO_SYS(RCV_PAMP_PMGPIO), 1);
-			gpio_direction_output(PM8921_GPIO_PM_TO_SYS(RCV_SPK_SEL_PMGPIO), 1);
-			pr_info("rcv amp on--");
-
-			pr_info("%s: slepping 4 ms after turning on external "
-				" Bottom Speaker Ampl\n", __func__);
+			msm_enable_ext_spk_amp_gpio(RCV_PAMP_PMGPIO);
+			pr_debug("%s: sleeping 4 ms after turning on RCV Ampl\n", __func__);
 			usleep_range(4000, 4000);
 		}
+
 	} else if (spk & (HS_AMP_POS | HS_AMP_NEG)) {
 
 		if ((msm_hs_pamp & HS_AMP_POS) &&
 			(msm_hs_pamp & HS_AMP_NEG)) {
-
-			pr_info("%s() HS Ampl already "
+			pr_debug("%s() HS Ampl already"
 				"turned on. spk = 0x%08x\n", __func__, spk);
 			return;
 		}
@@ -270,155 +265,53 @@ static void msm_ext_spk_power_amp_on(u32 spk)
 
 		if ((msm_hs_pamp & HS_AMP_POS) &&
 			(msm_hs_pamp & HS_AMP_NEG)) {
-			
-			pr_info("hs amp on++");
-                        if(query_tpa6185()) {
-                            gpio_direction_output(AUD_HP_EN_GPIO, 1);
-			    set_handset_amp(1);
-                        }
-
-                        if(query_rt5501())
-                            set_rt5501_amp(1);
-			pr_info("hs amp on--");
-			pr_info("%s: slepping 4 ms after turning on external "
-				" Bottom Speaker Ampl\n", __func__);
+#ifdef CONFIG_AMP_RT5501
+			if (query_rt5501())
+				set_rt5501_amp(1);
+#endif
+			pr_debug("%s: sleeping 4 ms after turning on HS Ampl\n", __func__);
 			usleep_range(4000, 4000);
 		}
-	} else if (spk & (BOTTOM_SPK_AMP_POS | BOTTOM_SPK_AMP_NEG)) {
-
-		if ((msm_ext_bottom_spk_pamp & BOTTOM_SPK_AMP_POS) &&
-			(msm_ext_bottom_spk_pamp & BOTTOM_SPK_AMP_NEG)) {
-
-			pr_info("%s() External Bottom Speaker Ampl already "
-				"turned on. spk = 0x%08x\n", __func__, spk);
-			return;
-		}
-
-		msm_ext_bottom_spk_pamp |= spk;
-
-		if ((msm_ext_bottom_spk_pamp & BOTTOM_SPK_AMP_POS) &&
-			(msm_ext_bottom_spk_pamp & BOTTOM_SPK_AMP_NEG)) {
-
-			pr_info("%s: slepping 4 ms after turning on external "
-				" Bottom Speaker Ampl\n", __func__);
-			usleep_range(4000, 4000);
-		}
-
-	} else if (spk & (TOP_SPK_AMP_POS | TOP_SPK_AMP_NEG | TOP_SPK_AMP)) {
-
-		pr_info("%s():top_spk_amp_state = 0x%x spk_event = 0x%x\n",
-			__func__, msm_ext_top_spk_pamp, spk);
-
-		if (((msm_ext_top_spk_pamp & TOP_SPK_AMP_POS) &&
-			(msm_ext_top_spk_pamp & TOP_SPK_AMP_NEG)) ||
-				(msm_ext_top_spk_pamp & TOP_SPK_AMP)) {
-
-			pr_info("%s() External Top Speaker Ampl already"
-				"turned on. spk = 0x%08x\n", __func__, spk);
-			return;
-		}
-
-		msm_ext_top_spk_pamp |= spk;
-
-		if (((msm_ext_top_spk_pamp & TOP_SPK_AMP_POS) &&
-			(msm_ext_top_spk_pamp & TOP_SPK_AMP_NEG)) ||
-				(msm_ext_top_spk_pamp & TOP_SPK_AMP)) {
-
-			pr_info("%s: sleeping 4 ms after turning on "
-				" external Top Speaker Ampl\n", __func__);
-			usleep_range(4000, 4000);
-		}
-	} else  {
-
-		pr_err("%s: ERROR : Invalid External Speaker Ampl. spk = 0x%08x\n",
-			__func__, spk);
-		return;
 	}
 }
 
 static void msm_ext_spk_power_amp_off(u32 spk)
 {
 	if (spk & (RCV_AMP_POS | RCV_AMP_NEG)) {
+
 		if (!msm_rcv_pamp)
 			return;
 
-
-		pr_info("rcv amp off ++");
-		gpio_direction_output(PM8921_GPIO_PM_TO_SYS(RCV_PAMP_PMGPIO), 0);
+		gpio_direction_output(RCV_PAMP_PMGPIO, 0);
+		gpio_free(RCV_PAMP_PMGPIO);
 		gpio_direction_output(PM8921_GPIO_PM_TO_SYS(RCV_SPK_SEL_PMGPIO), 0);
-		pr_info("rcv amp off --");
-
+		gpio_free(PM8921_GPIO_PM_TO_SYS(RCV_SPK_SEL_PMGPIO));
 		msm_rcv_pamp = 0;
 
-		pr_info("%s: sleeping 4 ms after turning off external Bottom"
+		pr_debug("%s: sleeping 4 ms after turning off external Bottom"
 			" Speaker Ampl\n", __func__);
 
 		usleep_range(4000, 4000);
+
 	} else if (spk & (HS_AMP_POS | HS_AMP_NEG)) {
+
 		if (!msm_hs_pamp)
 			return;
 
-		
-		pr_info("hs amp off ++");
-                if(query_tpa6185()) {
-		    set_handset_amp(0);
-                    gpio_direction_output(AUD_HP_EN_GPIO, 0);
-                }
-
-                if(query_rt5501())
-                    set_rt5501_amp(0);
-		pr_info("hs amp off --");
-
+#ifdef CONFIG_AMP_RT5501
+		if (query_rt5501())
+			set_rt5501_amp(0);
+#endif
 		msm_hs_pamp = 0;
 
-		pr_info("%s: sleeping 4 ms after turning off external Bottom"
-			" Speaker Ampl\n", __func__);
-
-		usleep_range(4000, 4000);
-	} else if (spk & (BOTTOM_SPK_AMP_POS | BOTTOM_SPK_AMP_NEG)) {
-
-		if (!msm_ext_bottom_spk_pamp)
-			return;
-
-		msm_ext_bottom_spk_pamp = 0;
-
-		pr_info("%s: sleeping 4 ms after turning off external Bottom"
+		pr_debug("%s: sleeping 4 ms after turning off external Bottom"
 			" Speaker Ampl\n", __func__);
 
 		usleep_range(4000, 4000);
 
-		} else if (spk & (TOP_SPK_AMP_POS | TOP_SPK_AMP_NEG | TOP_SPK_AMP)) {
-
-		pr_info("%s: top_spk_amp_state = 0x%x spk_event = 0x%x\n",
-				__func__, msm_ext_top_spk_pamp, spk);
-
-		if (!msm_ext_top_spk_pamp)
-			return;
-
-		if ((spk & TOP_SPK_AMP_POS) || (spk & TOP_SPK_AMP_NEG)) {
-
-			msm_ext_top_spk_pamp &= (~(TOP_SPK_AMP_POS |
-							TOP_SPK_AMP_NEG));
-		} else if (spk & TOP_SPK_AMP) {
-			msm_ext_top_spk_pamp &=  ~TOP_SPK_AMP;
-		}
-
-		if (msm_ext_top_spk_pamp)
-			return;
-
-		msm_ext_top_spk_pamp = 0;
-
-		pr_info("%s: sleeping 4 ms after ext Top Spek Ampl is off\n",
-				__func__);
-
-		usleep_range(4000, 4000);
-	} else  {
-
-		pr_err("%s: ERROR : Invalid Ext Spk Ampl. spk = 0x%08x\n",
-			__func__, spk);
-		return;
 	}
 }
+
 
 static void msm_ext_control(struct snd_soc_codec *codec)
 {
@@ -1758,7 +1651,7 @@ static int msm_aux_pcm_get_gpios(void)
 static int configure_mi2s_rx_gpio(void)
 {
 	int ret;
-pr_info("%s: SBRISSEN",__func__);
+
 	ret = gpio_request(GPIO_MI2S_RX_SCLK, "MI2S_RX_SCLK");
 	if (ret) {
 		pr_err("%s: Failed to request gpio %d\n",
@@ -1878,12 +1771,11 @@ static int msm_mi2s_startup(struct snd_pcm_substream *substream)
 			pr_err("set format for codec dai failed\n");
 	}
 	pr_info("spk amp on ++");
-/*       ################################### CAUSES KERNEL PANIC - FIX ME ########################
 	set_tfa9887_spkamp(1, 0);
 #ifdef CONFIG_AMP_TFA9887L
 	set_tfa9887l_spkamp(1,0);
 #endif
-*/
+
 	pr_info("spk amp on --");
 	return ret;
 }
@@ -2607,8 +2499,6 @@ static void mi2s_gpio_init(void)
 		GPIO_CFG(42, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),
 	};
 
-pr_info("%s: SBRISSEN",__func__);
-
 	gpio_tlmm_config(audio_mi2s_sleep_table[0], GPIO_CFG_ENABLE);
 	gpio_tlmm_config(audio_mi2s_sleep_table[1], GPIO_CFG_ENABLE);
 	gpio_tlmm_config(audio_mi2s_sleep_table[2], GPIO_CFG_ENABLE);
@@ -2629,7 +2519,7 @@ static void ext_hp_gpio_init(void)
 		.out_strength   = PM_GPIO_STRENGTH_LOW,
 		.function       = PM_GPIO_FUNC_NORMAL,
 	};
-pr_info("%s: SBRISSEN",__func__);
+
 	ret = gpio_request(AUD_HP_EN_GPIO, "hp_en");
 	if (ret) {
 		pr_err("%s: Failed to request gpio %d\n", __func__,
@@ -2795,8 +2685,8 @@ static int __init msm_audio_init(void)
 	}
 
 	htc_audio_init();
-	mi2s_gpio_init();
-	ext_hp_gpio_init();	
+	ext_hp_gpio_init();
+	mi2s_gpio_init();		
 
 	mutex_init(&cdc_mclk_mutex);
 	atomic_set(&auxpcm_rsc_ref, 0);

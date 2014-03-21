@@ -69,7 +69,6 @@
 #endif
 #include <linux/fmem.h>
 #include <mach/restart.h>
-#include <linux/tpa6185.h>
 #include <linux/rt5501.h>
 #include <linux/tfa9887.h>
 #include "msm_watchdog.h"
@@ -243,7 +242,7 @@ static struct android_pmem_platform_data android_pmem_audio_pdata = {
 	.memory_type = MEMTYPE_EBI1,
 };
 
-static struct platform_device android_pmem_audio_device = {
+static struct platform_device apq8064_android_pmem_audio_device = {
 	.name = "android_pmem",
 	.id = 4,
 	.dev = { .platform_data = &android_pmem_audio_pdata },
@@ -2182,14 +2181,14 @@ static struct platform_device t6_device_ext_mpp8_vreg __devinitdata = {
 	},
 };
 
-static struct platform_device t6_device_ext_ts_sw_vreg __devinitdata = {
+/*static struct platform_device t6_device_ext_ts_sw_vreg __devinitdata = {
 	.name	= GPIO_REGULATOR_DEV_NAME,
 	.id	= PM8921_GPIO_PM_TO_SYS(23),
 	.dev	= {
 		.platform_data
 			= &t6_gpio_regulator_pdata[GPIO_VREG_ID_EXT_TS_SW],
 	},
-};
+};*/
 
 static struct platform_device t6_device_rpm_regulator __devinitdata = {
 	.name	= "rpm-regulator",
@@ -2885,7 +2884,7 @@ static struct platform_device *common_devices[] __initdata = {
 	&apq8064_device_qup_i2c_gsbi2,
 	&apq8064_device_qup_i2c_gsbi3,
 	&apq8064_device_qup_i2c_gsbi4,
-	&apq8064_device_qup_i2c_gsbi7,
+    &apq8064_device_qup_i2c_gsbi7,	
 	&apq8064_device_qup_spi_gsbi1,
 	&apq8064_device_qup_spi_gsbi5,
 #ifdef CONFIG_GSBI4_UARTDM
@@ -2893,7 +2892,7 @@ static struct platform_device *common_devices[] __initdata = {
 #endif
 	&t6_device_ext_5v_vreg,
 	&t6_device_ext_mpp8_vreg,
-	&t6_device_ext_ts_sw_vreg,
+//	&t6_device_ext_ts_sw_vreg,
 	&apq8064_device_ssbi_pmic1,
 	&apq8064_device_ssbi_pmic2,
 	&msm_device_smd_apq8064,
@@ -3416,7 +3415,7 @@ static struct msm_i2c_platform_data apq8064_i2c_qup_gsbi7_pdata = {
 
 #define GSBI_DUAL_MODE_CODE 0x60
 #define MSM_GSBI1_PHYS		0x12440000
-#define MSM_GSBI7_PHYS		0x16600000
+
 static void __init t6_i2c_init(void)
 {
 	void __iomem *gsbi_mem;
@@ -3426,7 +3425,6 @@ static void __init t6_i2c_init(void)
 	/* Ensure protocol code is written before proceeding */
 	wmb();
 	iounmap(gsbi_mem);
-pr_info("%s: SBRISSEN",__func__);
 	apq8064_device_qup_i2c_gsbi2.dev.platform_data =
 					&apq8064_i2c_qup_gsbi2_pdata;
 	apq8064_device_qup_i2c_gsbi3.dev.platform_data =
@@ -3443,7 +3441,7 @@ static void __init apq8064_init_dsps(void)
 {
 	struct msm_dsps_platform_data *pdata =
 		msm_dsps_device_8064.dev.platform_data;
-pr_info("%s: SBRISSEN",__func__);
+
 	pdata->pil_name = DSPS_PIL_GENERIC_NAME;
 	pdata->gpios = NULL;
 	pdata->gpios_num = 0;
@@ -3469,21 +3467,10 @@ struct i2c_registry {
 #define TPA6185_I2C_SLAVE_ADDR	(0xC6 >> 1)
 #define RT5501_I2C_SLAVE_ADDR	(0xF0 >> 1)
 
-static struct tpa6185_platform_data tpa6185_data={
-         .gpio_tpa6185_spk_en = PM8921_GPIO_PM_TO_SYS(PM_AUD_HP_EN),
-
-};
 
 static struct rt5501_platform_data rt5501_data={
          .gpio_rt5501_spk_en = PM8921_GPIO_PM_TO_SYS(PM_AUD_HP_EN),
 
-};
-
-static struct i2c_board_info msm_i2c_gsbi7_tpa6185_info[] = {
-	{
-		I2C_BOARD_INFO(TPA6185_I2C_NAME, TPA6185_I2C_SLAVE_ADDR),
-		.platform_data = &tpa6185_data,
-	},
 };
 
 static struct i2c_board_info msm_i2c_gsbi7_rt5501_info[] = {
@@ -4521,12 +4508,6 @@ static struct i2c_registry t6_i2c_devices[] __initdata = {
 	{
 		I2C_SURF | I2C_FFA,
 		APQ_8064_GSBI7_QUP_I2C_BUS_ID,
-		msm_i2c_gsbi7_tpa6185_info,
-		ARRAY_SIZE(msm_i2c_gsbi7_tpa6185_info),
-	},
-	{
-		I2C_SURF | I2C_FFA,
-		APQ_8064_GSBI7_QUP_I2C_BUS_ID,
 		msm_i2c_gsbi7_rt5501_info,
 		ARRAY_SIZE(msm_i2c_gsbi7_rt5501_info),
 	},
@@ -4573,9 +4554,10 @@ static void __init register_i2c_devices(void)
 	mhl_sii9234_device_data.gpio_reset = PM8921_GPIO_PM_TO_SYS(PM_MHL_RSTz);
 #endif
 #endif
-	
+
 	for (i = 0; i < ARRAY_SIZE(t6_i2c_devices); ++i) {
 		if (t6_i2c_devices[i].machs & mach_mask) {
+
 			i2c_register_board_info(t6_i2c_devices[i].bus,
 						t6_i2c_devices[i].info,
 						t6_i2c_devices[i].len);
@@ -4669,6 +4651,7 @@ static void __init t6_common_init(void)
 						&apq8064_qup_spi_gsbi1_pdata;
 	apq8064_device_qup_spi_gsbi5.dev.platform_data =
 						&apq8064_qup_spi_gsbi5_pdata;
+
 	t6_init_pmic();
 
 	android_usb_pdata.swfi_latency =
