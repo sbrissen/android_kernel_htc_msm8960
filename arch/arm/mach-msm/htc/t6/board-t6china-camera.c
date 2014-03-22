@@ -14,12 +14,12 @@
 #include <asm/mach-types.h>
 #include <linux/i2c.h>
 #include <linux/gpio.h>
-#include <mach/camera.h>
+#include <mach/board.h>
 #include <mach/msm_bus_board.h>
 #include <mach/gpiomux.h>
 
 #include "board-t6.h"
-#include "devices.h"
+#include "../../devices.h"
 
 #include <linux/spi/spi.h>
 
