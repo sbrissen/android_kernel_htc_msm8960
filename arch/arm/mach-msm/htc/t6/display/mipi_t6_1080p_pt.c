@@ -109,7 +109,7 @@ static int __init jdi_renesas_panel_init(void)
 static int __init jdi_renesas_panel_init_c3(void)
 {
 	int ret;
-
+pr_info("%s: SBRISSEN",__func__);
 	pinfo.xres = 1080;
 	pinfo.yres = 1920;
 	pinfo.type = MIPI_CMD_PANEL;
@@ -182,7 +182,7 @@ static int __init jdi_renesas_panel_init_c3(void)
 
 static int __init mipi_t6_1080p_pt_init(void)
 {
-
+	pr_info("%s: SBRISSEN",__func__);
 	switch (panel_type) {
 	case PANEL_ID_SCORPIUS_JDI_RENESAS:
 		jdi_renesas_panel_init();

@@ -7,6 +7,7 @@ obj-$(CONFIG_MACH_T6_UL) += board-t6-audio.o
 obj-$(CONFIG_MACH_T6_UL) += board-t6-pmic.o
 obj-$(CONFIG_MACH_T6_UL) += board-t6-keypad.o
 obj-$(CONFIG_MACH_T6_UL) += board-t6-gpu.o
+obj-$(CONFIG_MACH_T6_UL) += board-t6-wifi.o
 obj-$(CONFIG_MACH_T6_UL) += display/
 CFLAGS_board-t6-display.o += -Idrivers/video
 CFLAGS_board-t6-audio.o += -Isound/soc/msm

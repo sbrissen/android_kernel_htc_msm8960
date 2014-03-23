@@ -168,9 +168,7 @@ struct pm8xxx_gpio_init {
 
 #define APQ8064_FIXED_AREA_START (0xa0000000 - (MSM_ION_MM_FW_SIZE + HOLE_SIZE))
 #define MAX_FIXED_AREA_SIZE	0x10000000
-#define MSM_MM_FW_SIZE		(0x200000 - HOLE_SIZE)
 #define APQ8064_FW_START	APQ8064_FIXED_AREA_START
-#define MSM_ION_ADSP_SIZE	SZ_8M
 
 #ifdef CONFIG_KERNEL_MSM_CONTIG_MEM_REGION
 static unsigned msm_contig_mem_size = MSM_CONTIG_MEM_SIZE;
@@ -324,9 +322,6 @@ static struct ion_cp_heap_pdata cp_mm_apq8064_ion_pdata = {
 	.reusable = FMEM_ENABLED,
 	.mem_is_fmem = FMEM_ENABLED,
 	.fixed_position = FIXED_MIDDLE,
-#ifdef CONFIG_CMA
-	.is_cma = 1,
-#endif
 };
 
 static struct ion_cp_heap_pdata cp_mfc_apq8064_ion_pdata = {
@@ -337,12 +332,6 @@ static struct ion_cp_heap_pdata cp_mfc_apq8064_ion_pdata = {
 	.fixed_position = FIXED_HIGH,
 };
 
-static struct ion_co_heap_pdata co_apq8064_ion_pdata = {
-	.adjacent_mem_id = INVALID_HEAP_ID,
-	.align = PAGE_SIZE,
-	.mem_is_fmem = 0,
-};
-
 static struct ion_co_heap_pdata fw_co_apq8064_ion_pdata = {
 	.adjacent_mem_id = ION_CP_MM_HEAP_ID,
 	.align = SZ_128K,
@@ -350,6 +339,12 @@ static struct ion_co_heap_pdata fw_co_apq8064_ion_pdata = {
 	.fixed_position = FIXED_LOW,
 };
 #endif
+
+static struct ion_co_heap_pdata co_apq8064_ion_pdata = {
+	.adjacent_mem_id = INVALID_HEAP_ID,
+	.align = PAGE_SIZE,
+	.mem_is_fmem = 0,
+};
 
 static u64 msm_dmamask = DMA_BIT_MASK(32);
 
@@ -362,16 +357,6 @@ static struct platform_device ion_mm_heap_device = {
 	}
 };
 
-#ifdef CONFIG_CMA
-static struct platform_device ion_adsp_heap_device = {
-	.name = "ion-adsp-heap-device",
-	.id = -1,
-	.dev = {
-		.dma_mask = &msm_dmamask,
-		.coherent_dma_mask = DMA_BIT_MASK(32),
-	}
-};
-#endif
 /**
  * These heaps are listed in the order they will be allocated. Due to
  * video hardware restrictions and content protection the FW heap has to
@@ -446,17 +431,6 @@ struct ion_platform_heap apq8064_heaps[] = {
 			.memory_type = ION_EBI_TYPE,
 			.extra_data = (void *) &co_apq8064_ion_pdata,
 		},
-#ifdef CONFIG_CMA
-		{
-			.id     = ION_ADSP_HEAP_ID,
-			.type   = ION_HEAP_TYPE_DMA,
-			.name   = ION_ADSP_HEAP_NAME,
-			.size   = MSM_ION_ADSP_SIZE,
-			.memory_type = ION_EBI_TYPE,
-			.extra_data = (void *) &co_apq8064_ion_pdata,
-			.priv = &ion_adsp_heap_device.dev,
-		},
-#endif
 #endif
 };
 
