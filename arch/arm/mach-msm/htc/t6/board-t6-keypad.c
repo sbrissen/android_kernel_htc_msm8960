@@ -26,15 +26,11 @@
 
 static char *keycaps = "--qwerty";
 #undef MODULE_PARAM_PREFIX
-#define MODULE_PARAM_PREFIX "board_t6ul."
+#define MODULE_PARAM_PREFIX "board_t6."
 
 module_param_named(keycaps, keycaps, charp, 0);
 
 static struct gpio_event_direct_entry t6_keypad_map[] = {
-	{
-		.gpio = MSM_PWR_KEY_MSMz,
-		.code = KEY_POWER,
-	},
 	{
 		.gpio = MSM_VOL_DOWNz,
 		.code = KEY_VOLUMEDOWN,
@@ -63,7 +59,7 @@ static struct gpio_event_info *t6_keypad_info[] = {
 };
 
 static struct gpio_event_platform_data t6_keypad_data = {
-	.name = "device-keypad",
+	.name = "keypad_8960",
 	.info = t6_keypad_info,
 	.info_count = ARRAY_SIZE(t6_keypad_info),
 };
@@ -71,13 +67,12 @@ static struct gpio_event_platform_data t6_keypad_data = {
 static struct platform_device t6_keypad_device = {
 	.name = GPIO_EVENT_DEV_NAME,
 	.id = 0,
-	.dev		= {
-		.platform_data	= &t6_keypad_data,
+	.dev = {
+		.platform_data = &t6_keypad_data,
 	},
 };
 
 static struct keyreset_platform_data t6_reset_keys_pdata = {
-	
 	.keys_down = {
 		KEY_POWER,
 		KEY_VOLUMEDOWN,
@@ -98,4 +93,3 @@ int __init t6_init_keypad(void)
 
 	return platform_device_register(&t6_keypad_device);
 }
-
