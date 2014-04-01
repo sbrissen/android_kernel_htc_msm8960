@@ -121,12 +121,6 @@ static struct msm_mmc_pad_drv sdc3_pad_drv_on_cfg[] = {
 	{TLMM_HDRV_SDC3_DATA, GPIO_CFG_10MA}
 };
 
-static struct msm_mmc_pad_drv sdc3_pad_drv_on_SDR104_cfg[] = {
-	{TLMM_HDRV_SDC3_CLK, GPIO_CFG_10MA},
-	{TLMM_HDRV_SDC3_CMD, GPIO_CFG_10MA},
-	{TLMM_HDRV_SDC3_DATA, GPIO_CFG_10MA}
-};
-
 static struct msm_mmc_pad_drv sdc3_pad_drv_off_cfg[] = {
 	{TLMM_HDRV_SDC3_CLK, GPIO_CFG_2MA},
 	{TLMM_HDRV_SDC3_CMD, GPIO_CFG_2MA},
@@ -166,7 +160,6 @@ static struct msm_mmc_pad_drv_data mmc_pad_drv_data[MAX_SDCC_CONTROLLER] = {
 	},
 	[SDCC3] = {
 		.on = sdc3_pad_drv_on_cfg,
-		.on_SDR104 = sdc3_pad_drv_on_SDR104_cfg,
 		.off = sdc3_pad_drv_off_cfg,
 		.size = ARRAY_SIZE(sdc3_pad_drv_on_cfg)
 	},
@@ -200,7 +193,6 @@ static unsigned int sdc1_sup_clk_rates[] = {
 	400000, 24000000, 48000000, 96000000
 };
 
-static unsigned int t6_sdc1_slot_type = MMC_TYPE_MMC;
 static struct mmc_platform_data sdc1_data = {
 	.ocr_mask       = MMC_VDD_27_28 | MMC_VDD_28_29,
 #ifdef CONFIG_MMC_MSM_SDC1_8_BIT_SUPPORT
@@ -210,15 +202,12 @@ static struct mmc_platform_data sdc1_data = {
 #endif
 	.sup_clk_table	= sdc1_sup_clk_rates,
 	.sup_clk_cnt	= ARRAY_SIZE(sdc1_sup_clk_rates),
-	.slot_type      = &t6_sdc1_slot_type,
 	.pin_data	= &mmc_slot_pin_data[SDCC1],
 	.vreg_data	= &mmc_slot_vreg_data[SDCC1],
 	.nonremovable   = 1,
-//	.hc_erase_group_def	=1,
 	.uhs_caps   = MMC_CAP_1_8V_DDR | MMC_CAP_UHS_DDR50,
 	.mpm_sdiowakeup_int = MSM_MPM_PIN_SDC1_DAT1,
 	.msm_bus_voting_data = &sps_to_ddr_bus_voting_data,
-//	.bkops_support = 1,
 };
 static struct mmc_platform_data *t6_sdc1_pdata = &sdc1_data;
 #else
@@ -231,13 +220,11 @@ static unsigned int sdc3_sup_clk_rates[] = {
 	400000, 24000000, 48000000, 96000000, 192000000
 };
 
-static unsigned int t6_sdc3_slot_type = MMC_TYPE_SD;
 static struct mmc_platform_data sdc3_data = {
 	.ocr_mask       = MMC_VDD_27_28 | MMC_VDD_28_29,
 	.mmc_bus_width  = MMC_CAP_4_BIT_DATA,
 	.sup_clk_table	= sdc3_sup_clk_rates,
 	.sup_clk_cnt	= ARRAY_SIZE(sdc3_sup_clk_rates),
-	.slot_type      = &t6_sdc3_slot_type,
 	.pin_data	= &mmc_slot_pin_data[SDCC3],
 	.vreg_data	= &mmc_slot_vreg_data[SDCC3],
 	.status_gpio	= PM8921_GPIO_PM_TO_SYS(PM_SDC3_CDz),
@@ -291,10 +278,9 @@ void __init t6_init_mmc(void)
 {
 	printk(KERN_INFO "t6: %s\n", __func__);
 
-	/*if (machine_is_m7_evm()) {
-		t6_sdc3_pdata->status_gpio = 0;
-		t6_sdc3_pdata->status_irq = 0;
-	}*/
+	t6_sdc3_pdata->status_gpio = 0;
+	t6_sdc3_pdata->status_irq = 0;
+
 	apq8064_add_sdcc(1, t6_sdc1_pdata);
 	apq8064_add_sdcc(3, t6_sdc3_pdata);
 	

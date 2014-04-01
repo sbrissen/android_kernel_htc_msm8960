@@ -135,7 +135,7 @@ static struct pm8xxx_mpp_init pm8xxx_mpps[] __initdata = {
 	PM8921_MPP_INIT(PM8XXX_AMUX_MPP_4, D_BI_DIR, PM8921_MPP_DIG_LEVEL_L17, BI_PULLUP_10KOHM),
 #endif
 	
-//	PM8921_MPP_INIT(PM8XXX_AMUX_MPP_12, D_OUTPUT, PM8921_MPP_DIG_LEVEL_S4, DOUT_CTRL_LOW),
+	PM8921_MPP_INIT(PM8XXX_AMUX_MPP_12, D_OUTPUT, PM8921_MPP_DIG_LEVEL_S4, DOUT_CTRL_LOW),
 };
 
 int is_9kramdump_mode(void);
@@ -179,7 +179,7 @@ static struct pm8xxx_misc_platform_data t6_pm8921_misc_pdata = {
 #define PM8XXX_LED_PWM_DUTY_MS		20
 #define PM8XXX_PWM_CHANNEL_NONE		-1
 static DEFINE_MUTEX(led_lock);
-static struct regulator *led_reg_l29;
+static struct regulator *led_reg_l15;
 static int led_power_LPM(int on)
 {
 	int rc = 0;
@@ -187,34 +187,34 @@ static int led_power_LPM(int on)
 	mutex_lock(&led_lock);
 	pr_info("[LED] %s: enter:%d\n", __func__, on);
 
-	if (led_reg_l29 == NULL) {
-	led_reg_l29 = regulator_get(NULL, "8921_l15");
-	if (IS_ERR(led_reg_l29)) {
+	if (led_reg_l15 == NULL) {
+	led_reg_l15 = regulator_get(NULL, "8921_l15");
+	if (IS_ERR(led_reg_l15)) {
 			pr_err("[LED] %s: Unable to get '8921_l15' \n", __func__);
 			mutex_unlock(&led_lock);
 			return -ENODEV;
 		}
 	}
 	if (on == 1) {
-		rc = regulator_set_optimum_mode(led_reg_l29, 100);
+		rc = regulator_set_optimum_mode(led_reg_l15, 100);
 	   if (rc < 0)
 		pr_err("[LED] %s: enter LMP,set_optimum_mode l15 failed, rc=%d\n", __func__, rc);
 
-	rc = regulator_enable(led_reg_l29);
+	rc = regulator_enable(led_reg_l15);
 		if (rc) {
-			pr_err("'%s' regulator enable failed rc=%d\n", "led_reg_l29", rc);
+			pr_err("'%s' regulator enable failed rc=%d\n", "led_reg_l15", rc);
 			mutex_unlock(&led_lock);
 			return rc;
 		}
 		pr_info("[LED] %s: enter LMP mode\n", __func__);
 	} else {
-		rc = regulator_set_optimum_mode(led_reg_l29, 100000);
+		rc = regulator_set_optimum_mode(led_reg_l15, 100000);
 	   if (rc < 0)
 		pr_err("[LED] %s: leave LMP,set_optimum_mode l15 failed, rc=%d\n", __func__, rc);
 
-		rc = regulator_enable(led_reg_l29);
+		rc = regulator_enable(led_reg_l15);
 		if (rc) {
-			 pr_err("'%s' regulator enable failed, rc=%d\n", "led_reg_l29", rc);
+			 pr_err("'%s' regulator enable failed, rc=%d\n", "led_reg_l15", rc);
 		mutex_unlock(&led_lock);
 		   return rc;
 		}
@@ -352,36 +352,6 @@ static int t6_pm8921_therm_mitigation[] = {
 	225,
 };
 
-static struct htc_charger
-smb_icharger = {
-	.name = "smb349",
-#ifdef CONFIG_SMB349_CHARGER
-	.get_charging_source = smb349_get_charging_src,
-	.get_charging_enabled = smb349_get_charging_enabled,
-	.set_charger_enable = smb349_enable_charging,
-	.set_pwrsrc_enable = smb349_enable_pwrsrc,
-	.set_pwrsrc_and_charger_enable = smb349_set_pwrsrc_and_charger_enable,
-	.set_limit_charge_enable = smb349_limit_charge_enable,
-	.is_ovp = smb349_is_charger_overvoltage,
-	.is_batt_temp_fault_disable_chg = smb349_is_batt_temp_fault_disable_chg,
-	.charger_change_notifier_register = cable_detect_register_notifier,
-	.dump_all = smb349_dump_all,
-	.get_attr_text = smb349_charger_get_attr_text,
-#endif
-};
-
-static struct ext_usb_chg_pm8921
-smb_ext_chg = {
-       .name = "smb349",
-       .ctx = NULL,
-#ifdef CONFIG_SMB349_CHARGER
-       .start_charging = smb349_start_charging,
-       .stop_charging = smb349_stop_charging,
-       .is_trickle =  smb349_is_trickle_charging,
-#endif
-       .ichg = &smb_icharger,
-};
-
 #define MAX_VOLTAGE_MV          4200
 static struct pm8921_charger_platform_data
 pm8921_chg_pdata __devinitdata = {
@@ -390,27 +360,37 @@ pm8921_chg_pdata __devinitdata = {
 	.max_voltage		= MAX_VOLTAGE_MV,
 	.min_voltage		= 3200,
 	.resume_voltage_delta	= 50,
-	.term_current		= 230,
-	.cool_temp		= 0,
+	.term_current		= 330,
+	.cool_temp		= 10,
 	.warm_temp		= 48,
 	.temp_check_period	= 1,
-	.max_bat_chg_current	= 1525,
-	.cool_bat_chg_current	= 1025,
-	.warm_bat_chg_current	= 1025,
+	.max_bat_chg_current	= 2000,
+	.cool_bat_chg_current	= 1525,
+	.warm_bat_chg_current	= 2000,
 	.cool_bat_voltage	= 4200,
 	.warm_bat_voltage	= 4000,
 	.mbat_in_gpio		= 0, 
 	.cable_in_irq		= PM8921_GPIO_IRQ(PM8921_IRQ_BASE, PM_OVP_INT_DECT),
 	.cable_in_gpio		= PM8921_GPIO_PM_TO_SYS(PM_OVP_INT_DECT),
+	.pj_in_irq    = PM8921_GPIO_IRQ(PM8921_IRQ_BASE, PM_POGO_ID),
+	.pj_in_gpio   = PM8921_GPIO_PM_TO_SYS(PM_POGO_ID),
+	.pj_vol_mpp   = PM8XXX_AMUX_MPP_12,
+	.pj_vol_mpp_sys	= PM8921_MPP_PM_TO_SYS(PM8XXX_AMUX_MPP_12),
+	.pj_adc_amux  = ADC_MPP_1_AMUX6,
+	.pj_to_batt_gpio	= PM8921_GPIO_PM_TO_SYS(PM_JAC_CHG_BAT_EN),
+	.batt_to_pj_gpio	= PM8921_GPIO_PM_TO_SYS(PM_BAT_CHG_JAC_EN),
+	.pj_full_vol		= 4250,
+	.is_aicl_enabled	= 1,
 	.is_embeded_batt	= 1,
+	.regulate_vin_min_thr_mv = 4150,
+	.lower_vin_min = 4300,
 	.eoc_ibat_thre_ma	= 50,
 	.ichg_threshold_ua = -1200000,
-	.ichg_regulation_thr_ua 	= -375000,
+	.ichg_regulation_thr_ua 	= -430000,
 	.thermal_mitigation	= t6_pm8921_therm_mitigation,
 	.thermal_levels		= ARRAY_SIZE(t6_pm8921_therm_mitigation),
 	.cold_thr = PM_SMBC_BATT_TEMP_COLD_THR__HIGH,
 	.hot_thr = PM_SMBC_BATT_TEMP_HOT_THR__LOW,
-	.ext_usb = &smb_ext_chg,
 	.rconn_mohm		= 10, 
 
 };
@@ -509,12 +489,7 @@ static struct msm_ssbi_platform_data t6_ssbi_pm8821_pdata __devinitdata = {
 
 void __init t6_init_pmic(void)
 {
-	if (system_rev >= XB) {
-		
-		pm8921_chg_pdata.ext_usb = NULL;
-	}
-
-	if (system_rev < PVT) {
+	if (system_rev == EVM) {
 		pm8921_chg_pdata.cable_in_irq = 0;
 		pm8921_chg_pdata.cable_in_gpio = 0;
 	}

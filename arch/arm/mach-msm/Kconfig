@@ -2608,4 +2608,10 @@ config MSM_USE_USER_ACCESSIBLE_TIMERS
 	  Enables MSM-specific user accessible timers via a shared
 	  memory page containing the cycle counter.
 
+config QUALCOMM_WLAN_PXO
+	default n
+	bool "Use PXO for WLAN clock source"
+	help
+	  Use PXO for clock source of WLAN chip
+
 endif

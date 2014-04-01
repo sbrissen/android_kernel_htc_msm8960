@@ -20,14 +20,11 @@
 
 #include "../board-t6.h"
 
-//#define MDP_GAMMA
 #ifdef MDP_GAMMA
 #include "mdp_gamma_renesas.h"
 #include "mdp_gamma_renesas_c3.h"
 #endif
 #include "mipi_t6.h"
-
- #define CABC_DIMMING_SWITCH
 
  static  struct pm8xxx_mpp_config_data MPP_ENABLE = {
 	.type           = PM8XXX_MPP_TYPE_D_OUTPUT,

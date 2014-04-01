@@ -101,7 +101,6 @@ struct msm_mmc_pad_drv {
 
 struct msm_mmc_pad_drv_data {
 	struct msm_mmc_pad_drv *on;
-	struct msm_mmc_pad_drv *on_SDR104;
 	struct msm_mmc_pad_drv *off;
 	u8 size;
 };
@@ -147,7 +146,6 @@ struct mmc_platform_data {
 	unsigned int uhs_caps2;
 	/* Supported packed write */
 	unsigned int packed_write;
-	unsigned int *slot_type;
 	void (*sdio_lpm_gpio_setup)(struct device *, unsigned int);
         unsigned int status_irq;
 	int status_gpio;

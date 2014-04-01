@@ -39,7 +39,7 @@
 #define TPA9887_WRITE_L_CONFIG	_IOW(TPA9887_IOCTL_MAGIC, 0x04, unsigned int)
 #define TPA9887_READ_L_CONFIG	_IOW(TPA9887_IOCTL_MAGIC, 0x05, unsigned int)
 #define TPA9887_KERNEL_LOCK    _IOW(TPA9887_IOCTL_MAGIC, 0x06, unsigned int)
-#define DEBUG (1)
+#define DEBUG (0)
 
 static struct i2c_client *this_client;
 static struct tfa9887_platform_data *pdata;

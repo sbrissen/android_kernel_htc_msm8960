@@ -168,7 +168,9 @@ struct pm8xxx_gpio_init {
 
 #define APQ8064_FIXED_AREA_START (0xa0000000 - (MSM_ION_MM_FW_SIZE + HOLE_SIZE))
 #define MAX_FIXED_AREA_SIZE	0x10000000
+#define MSM_MM_FW_SIZE		(0x200000 - HOLE_SIZE)
 #define APQ8064_FW_START	APQ8064_FIXED_AREA_START
+#define MSM_ION_ADSP_SIZE	SZ_8M
 
 #ifdef CONFIG_KERNEL_MSM_CONTIG_MEM_REGION
 static unsigned msm_contig_mem_size = MSM_CONTIG_MEM_SIZE;
@@ -322,6 +324,9 @@ static struct ion_cp_heap_pdata cp_mm_apq8064_ion_pdata = {
 	.reusable = FMEM_ENABLED,
 	.mem_is_fmem = FMEM_ENABLED,
 	.fixed_position = FIXED_MIDDLE,
+#ifdef CONFIG_CMA
+	.is_cma = 1,
+#endif
 };
 
 static struct ion_cp_heap_pdata cp_mfc_apq8064_ion_pdata = {
@@ -332,6 +337,12 @@ static struct ion_cp_heap_pdata cp_mfc_apq8064_ion_pdata = {
 	.fixed_position = FIXED_HIGH,
 };
 
+static struct ion_co_heap_pdata co_apq8064_ion_pdata = {
+	.adjacent_mem_id = INVALID_HEAP_ID,
+	.align = PAGE_SIZE,
+	.mem_is_fmem = 0,
+};
+
 static struct ion_co_heap_pdata fw_co_apq8064_ion_pdata = {
 	.adjacent_mem_id = ION_CP_MM_HEAP_ID,
 	.align = SZ_128K,
@@ -339,12 +350,6 @@ static struct ion_co_heap_pdata fw_co_apq8064_ion_pdata = {
 	.fixed_position = FIXED_LOW,
 };
 #endif
-
-static struct ion_co_heap_pdata co_apq8064_ion_pdata = {
-	.adjacent_mem_id = INVALID_HEAP_ID,
-	.align = PAGE_SIZE,
-	.mem_is_fmem = 0,
-};
 
 static u64 msm_dmamask = DMA_BIT_MASK(32);
 
@@ -356,6 +361,17 @@ static struct platform_device ion_mm_heap_device = {
 		.coherent_dma_mask = DMA_BIT_MASK(32),
 	}
 };
+
+#ifdef CONFIG_CMA
+static struct platform_device ion_adsp_heap_device = {
+	.name = "ion-adsp-heap-device",
+	.id = -1,
+	.dev = {
+		.dma_mask = &msm_dmamask,
+		.coherent_dma_mask = DMA_BIT_MASK(32),
+	}
+};
+#endif
 
 /**
  * These heaps are listed in the order they will be allocated. Due to
@@ -431,6 +447,17 @@ struct ion_platform_heap apq8064_heaps[] = {
 			.memory_type = ION_EBI_TYPE,
 			.extra_data = (void *) &co_apq8064_ion_pdata,
 		},
+#ifdef CONFIG_CMA
+		{
+			.id     = ION_ADSP_HEAP_ID,
+			.type   = ION_HEAP_TYPE_DMA,
+			.name   = ION_ADSP_HEAP_NAME,
+			.size   = MSM_ION_ADSP_SIZE,
+			.memory_type = ION_EBI_TYPE,
+			.extra_data = (void *) &co_apq8064_ion_pdata,
+			.priv = &ion_adsp_heap_device.dev,
+		},
+#endif
 #endif
 };
 
@@ -716,6 +743,12 @@ static struct reserve_info apq8064_reserve_info __initdata = {
 static void __init t6_reserve(void)
 {
 	msm_reserve();
+}
+
+static void __init t6_early_reserve(void)
+{
+	pr_info("%s: init starts\r\n", __func__);
+	reserve_info = &apq8064_reserve_info;
 }
 
 #ifdef CONFIG_USB_EHCI_MSM_HSIC
@@ -1679,14 +1712,6 @@ static struct mdm_platform_data mdm_platform_data = {
 	.ramdump_timeout_ms = 120000,
 };
 
-/*uint32_t apq_mdm_gpio_setting_table[] = {
-        GPIO_CFG(MSM_MDM2AP_HSIC_READY,  0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-        GPIO_CFG(MSM_MDM2AP_ERR_FATAL,  0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-        GPIO_CFG(MSM_MDM2AP_WAKEUP,  0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-        GPIO_CFG(MSM_MDM2AP_STATUS,  0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-        GPIO_CFG(MSM_MDM2AP_VDDMIN,  0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-};*/
-
 static struct resource mdm_resources[] = {
 	{
 		.start	= MSM_MDM2AP_ERR_FATAL,
@@ -2181,14 +2206,14 @@ static struct platform_device t6_device_ext_mpp8_vreg __devinitdata = {
 	},
 };
 
-/*static struct platform_device t6_device_ext_ts_sw_vreg __devinitdata = {
+static struct platform_device t6_device_ext_ts_sw_vreg __devinitdata = {
 	.name	= GPIO_REGULATOR_DEV_NAME,
 	.id	= PM8921_GPIO_PM_TO_SYS(23),
 	.dev	= {
 		.platform_data
 			= &t6_gpio_regulator_pdata[GPIO_VREG_ID_EXT_TS_SW],
 	},
-};*/
+};
 
 static struct platform_device t6_device_rpm_regulator __devinitdata = {
 	.name	= "rpm-regulator",
@@ -2892,7 +2917,7 @@ static struct platform_device *common_devices[] __initdata = {
 #endif
 	&t6_device_ext_5v_vreg,
 	&t6_device_ext_mpp8_vreg,
-//	&t6_device_ext_ts_sw_vreg,
+	&t6_device_ext_ts_sw_vreg,
 	&apq8064_device_ssbi_pmic1,
 	&apq8064_device_ssbi_pmic2,
 	&msm_device_smd_apq8064,
@@ -2978,7 +3003,7 @@ static struct platform_device *common_devices[] __initdata = {
 	&msm_bus_8064_cpss_fpb,
 	&apq8064_msm_device_vidc,
 	&msm_8960_q6_lpass,
-	&msm_8960_riva,
+//	&msm_8960_riva,
 	&msm_pil_vidc,
 	&msm_gss,
 #ifdef CONFIG_MSM_RTB
@@ -2988,8 +3013,8 @@ static struct platform_device *common_devices[] __initdata = {
 	&apq8064_msm_gov_device,
 #ifdef CONFIG_MSM_CACHE_ERP
 	&apq8064_device_cache_erp,
-	&msm8960_device_ebi1_ch0_erp,
-	&msm8960_device_ebi1_ch1_erp,
+//	&msm8960_device_ebi1_ch0_erp,
+//	&msm8960_device_ebi1_ch1_erp,
 #endif
 
 #ifdef CONFIG_MSM_GEMINI
@@ -4205,8 +4230,6 @@ static struct pn544_i2c_platform_data nfc_platform_data = {
 	.firm_gpio = PM8921_GPIO_PM_TO_SYS(PM_NFC_DL_MODE),
 	.ven_isinvert = 1,
 	.gpio_init = nfc_gpio_init,
-//	.gpio_deinit = nfc_gpio_deinit,
-//	.check_nfc_exist = nfc_init_check,
 };
 
 static struct i2c_board_info pn544_i2c_boardinfo[] = {
@@ -4672,7 +4695,7 @@ static void __init t6_common_init(void)
 	t6_cir_init();
 
 	apq8064_device_hsic_host.dev.platform_data = &msm_hsic_pdata;
-	msm_hsic_pdata.swfi_latency = msm_rpmrs_levels[0].latency_us;
+//	msm_hsic_pdata.swfi_latency = msm_rpmrs_levels[0].latency_us;
 	device_initialize(&apq8064_device_hsic_host.dev);
 	t6_pm8xxx_gpio_mpp_init();
 	t6_init_mmc();
@@ -4685,7 +4708,7 @@ static void __init t6_common_init(void)
 	slim_register_board_info(apq8064_slim_devices,
 		ARRAY_SIZE(apq8064_slim_devices));
 	apq8064_init_dsps();
-
+    platform_device_register(&msm_8960_riva);
 	BUG_ON(msm_pm_boot_init(&msm_pm_boot_pdata));
 	properties_kobj = kobject_create_and_add("board_properties", NULL);
 	if (properties_kobj) {
@@ -4712,11 +4735,10 @@ static void __init t6_cdp_init(void)
 {
 	if (meminfo_init(SYS_MEMORY, SZ_256M) < 0)
      	pr_info("%s: init starts\r\n", __func__);
-//	msm_tsens_early_init(&apq_tsens_pdata);
+
 	t6_common_init();
 	msm_rotator_set_split_iommu_domain();
 	platform_add_devices(cdp_devices, ARRAY_SIZE(cdp_devices));
-//	headset_device_register();
 
     msm_rotator_update_bus_vectors(1920, 1080);
 
@@ -4734,12 +4756,6 @@ static void __init t6_cdp_init(void)
 	
 	if (!(board_mfg_mode() == 6 || board_mfg_mode() == 7))
 		t6_add_usb_devices();
-}
-
-static void __init t6_early_reserve(void)
-{
-	pr_info("%s: init starts\r\n", __func__);
-	reserve_info = &apq8064_reserve_info;
 }
 
 #define PHY_BASE_ADDR1  0x80600000
@@ -4782,7 +4798,6 @@ static void __init t6_fixup(struct tag *tags, char **cmdline, struct meminfo *mi
 		mi->bank[1].size = SIZE_ADDR2;
 	}
 	skuid = parse_tag_skuid((const struct tag *)tags);
-	//printk(KERN_INFO "M7CDTU_fixup:skuid=0x%x\n", skuid);
 }
 
 MACHINE_START(T6_UL, "UNKNOWN")

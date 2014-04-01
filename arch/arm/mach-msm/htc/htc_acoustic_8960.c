@@ -78,6 +78,7 @@ acoustic_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	int rc = 0;
 	int hw_rev = 0;
 	int mode = -1;
+	D("SBRISSEN: %i",cmd);
 	mutex_lock(&api_lock);
 	switch (cmd) {
 	case ACOUSTIC_SET_Q6_EFFECT: {
