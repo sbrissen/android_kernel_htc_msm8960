@@ -3003,7 +3003,6 @@ static struct platform_device *common_devices[] __initdata = {
 	&msm_bus_8064_cpss_fpb,
 	&apq8064_msm_device_vidc,
 	&msm_8960_q6_lpass,
-//	&msm_8960_riva,
 	&msm_pil_vidc,
 	&msm_gss,
 #ifdef CONFIG_MSM_RTB
@@ -3013,8 +3012,8 @@ static struct platform_device *common_devices[] __initdata = {
 	&apq8064_msm_gov_device,
 #ifdef CONFIG_MSM_CACHE_ERP
 	&apq8064_device_cache_erp,
-//	&msm8960_device_ebi1_ch0_erp,
-//	&msm8960_device_ebi1_ch1_erp,
+	&msm8960_device_ebi1_ch0_erp,
+	&msm8960_device_ebi1_ch1_erp,
 #endif
 
 #ifdef CONFIG_MSM_GEMINI
@@ -4695,7 +4694,6 @@ static void __init t6_common_init(void)
 	t6_cir_init();
 
 	apq8064_device_hsic_host.dev.platform_data = &msm_hsic_pdata;
-//	msm_hsic_pdata.swfi_latency = msm_rpmrs_levels[0].latency_us;
 	device_initialize(&apq8064_device_hsic_host.dev);
 	t6_pm8xxx_gpio_mpp_init();
 	t6_init_mmc();
