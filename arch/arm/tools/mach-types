@@ -1206,3 +1206,4 @@ t6_ul                   MACH_T6_UL              T6_UL                   4642
 t6_uhl                  MACH_T6_UHL             T6_UHL                  4643
 t6_wl                   MACH_T6_WL              T6_WL                   4645
 t6_whl                  MACH_T6_WHL             T6_WHL                  4646
+m4_ul			MACH_M4_UL		M4_UL			4490
