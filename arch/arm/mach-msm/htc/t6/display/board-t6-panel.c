@@ -298,15 +298,23 @@ static struct platform_device wfd_device = {
 };
 #endif
 
-uint32_t cfg_panel_te_active[] = {GPIO_CFG(MSM_LCD_RSTz, 1, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA)};
-uint32_t cfg_panel_te_sleep[] = {GPIO_CFG(MSM_LCD_RSTz, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA)};
+static  struct pm8xxx_mpp_config_data MPP_ENABLE = {
+	.type           = PM8XXX_MPP_TYPE_D_OUTPUT,
+	.level          = PM8921_MPP_DIG_LEVEL_S4,
+	.control		= PM8XXX_MPP_DOUT_CTRL_HIGH,
+};
+
+static  struct pm8xxx_mpp_config_data MPP_DISABLE = {
+	.type           = PM8XXX_MPP_TYPE_D_OUTPUT,
+	.level          = PM8921_MPP_DIG_LEVEL_S4,
+	.control		= PM8XXX_MPP_DOUT_CTRL_LOW,
+};
 
 static int mipi_dsi_panel_power(int on)
 {
 	static bool dsi_power_on = false;
 	static bool panel_first_init = true;
 	static struct regulator *reg_lvs5, *reg_l2;
-	static int gpio36, gpio37;
 	int rc;
 
 	PR_DISP_INFO("%s: on=%d\n", __func__, on);
@@ -333,18 +341,6 @@ static int mipi_dsi_panel_power(int on)
 			pr_err("set_voltage l2 failed, rc=%d\n", rc);
 			return -EINVAL;
 		}
-		gpio36 = PM8921_GPIO_PM_TO_SYS(LCM_N5V_EN_MPP_9);
-		rc = gpio_request(gpio36, "lcd_5v-");
-		if (rc) {
-			pr_err("request lcd_5v- failed, rc=%d\n", rc);
-			return -ENODEV;
-		}
-		gpio37 = PM8921_GPIO_PM_TO_SYS(LCM_P5V_EN_MPP_10);
-		rc = gpio_request(gpio37, "lcd_5v+");
-		if (rc) {
-			pr_err("request lcd_5v+ failed, rc=%d\n", rc);
-			return -ENODEV;
-		}
 
 		gpio_tlmm_config(GPIO_CFG(MSM_LCD_RSTz, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), GPIO_CFG_ENABLE);
 
@@ -369,10 +365,17 @@ static int mipi_dsi_panel_power(int on)
 				return -ENODEV;
 			}
 			hr_msleep(1);
-			gpio_set_value_cansleep(gpio37, 1);
-			hr_msleep(2);
-			gpio_set_value_cansleep(gpio36, 1);
-
+			rc = pm8xxx_mpp_config(LCM_P5V_EN_MPP_10, &MPP_ENABLE);
+			if (rc < 0) {
+				pr_err("enable lcd_5v+ failed, rc=%d\n", rc);
+				return -ENODEV;
+			}
+			hr_msleep(2);	
+			rc = pm8xxx_mpp_config(LCM_N5V_EN_MPP_9, &MPP_ENABLE);
+			if (rc < 0) {
+				pr_err("enable lcd_5v- failed, rc=%d\n", rc);
+				return -ENODEV;
+			}
 			hr_msleep(7);
 			gpio_set_value(MSM_LCD_RSTz, 1);
 
@@ -402,26 +405,27 @@ static int mipi_dsi_panel_power(int on)
 
 			panel_first_init = false;
 		}
-		rc = gpio_tlmm_config(cfg_panel_te_active[0], GPIO_CFG_ENABLE);
-		if (rc) {
-			pr_err("%s: gpio_tlmm_config(%#x)=%d\n", __func__,
-					cfg_panel_te_active[0], rc);
-		}
 	} else {
-		rc = gpio_tlmm_config(cfg_panel_te_sleep[0], GPIO_CFG_ENABLE);
-		if (rc) {
-			pr_err("%s: gpio_tlmm_config(%#x)=%d\n", __func__,
-					cfg_panel_te_sleep[0], rc);
+		rc = pm8xxx_mpp_config(BL_HW_EN_MPP_8, &MPP_DISABLE);
+		if (rc < 0) {
+			pr_err("disable bl_hw failed, rc=%d\n", rc);
+			return -ENODEV;
 		}
-		gpio_tlmm_config(GPIO_CFG(BL_HW_EN_MPP_8, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), GPIO_CFG_ENABLE);
-		gpio_set_value(BL_HW_EN_MPP_8, 0);
 
 		gpio_set_value(MSM_LCD_RSTz, 0);
-		hr_msleep(3);
-		gpio_set_value_cansleep(gpio36, 0);
+		hr_msleep(3);	
+		rc = pm8xxx_mpp_config(LCM_N5V_EN_MPP_9, &MPP_DISABLE);
+		if (rc < 0) {
+			pr_err("disable lcd_5v- failed, rc=%d\n", rc);
+			return -ENODEV;
+		}
 
 		hr_msleep(2);
-		gpio_set_value_cansleep(gpio37, 0);
+		rc = pm8xxx_mpp_config(LCM_P5V_EN_MPP_10, &MPP_DISABLE);
+		if (rc < 0) {
+			pr_err("disable lcd_5v- failed, rc=%d\n", rc);
+			return -ENODEV;
+		}
 
 		hr_msleep(8);
 		rc = regulator_disable(reg_lvs5);

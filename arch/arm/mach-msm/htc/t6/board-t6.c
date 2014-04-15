@@ -2924,7 +2924,6 @@ static struct platform_device *common_devices[] __initdata = {
 	&apq8064_device_otg,
 	&apq8064_device_hsusb_host,
 	&msm_device_wcnss_wlan,
-	&msm_device_iris_fm,
 	&apq8064_fmem_device,
 #ifdef CONFIG_ANDROID_PMEM
 #ifndef CONFIG_MSM_MULTIMEDIA_USE_ION
@@ -2952,6 +2951,7 @@ static struct platform_device *common_devices[] __initdata = {
 		defined(CONFIG_CRYPTO_DEV_QCEDEV_MODULE)
 	&qcedev_device,
 #endif
+	&msm_device_iris_fm,
 #ifdef CONFIG_HW_RANDOM_MSM
 	&apq8064_device_rng,
 #endif
@@ -3027,7 +3027,6 @@ static struct platform_device *common_devices[] __initdata = {
 #ifdef CONFIG_BATTERY_BCL
 	&battery_bcl_device,
 #endif
-	&apq8064_msm_mpd_device,
 
 #ifdef CONFIG_HTC_BATT_8960
 	&htc_battery_pdev,
@@ -3037,6 +3036,7 @@ static struct platform_device *common_devices[] __initdata = {
 	&t6china_msm_rawchip_device,
 #endif
 #endif
+	&apq8064_msm_mpd_device,
 };
 
 static struct platform_device *cdp_devices[] __initdata = {

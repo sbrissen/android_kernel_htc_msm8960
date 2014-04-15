@@ -68,7 +68,7 @@ VREG_CONSUMERS(L9) = {
 VREG_CONSUMERS(L10) = {
 	REGULATOR_SUPPLY("8921_l10",		NULL),
 	REGULATOR_SUPPLY("iris_vddpa",		"wcnss_wlan.0"),
-	REGULATOR_SUPPLY("8921_l10",		"cable_detect.0"),
+//	REGULATOR_SUPPLY("8921_l10",		"cable_detect.0"),
 };
 VREG_CONSUMERS(L11) = {
 	REGULATOR_SUPPLY("8921_l11",		NULL),
@@ -147,7 +147,7 @@ VREG_CONSUMERS(S1) = {
 VREG_CONSUMERS(S2) = {
 	REGULATOR_SUPPLY("8921_s2",		NULL),
 	REGULATOR_SUPPLY("iris_vddrfa",		"wcnss_wlan.0"),
-	REGULATOR_SUPPLY("8921_s2",		"cable_detect.0"),
+//	REGULATOR_SUPPLY("8921_s2",		"cable_detect.0"),
 };
 VREG_CONSUMERS(S3) = {
 	REGULATOR_SUPPLY("8921_s3",		NULL),
