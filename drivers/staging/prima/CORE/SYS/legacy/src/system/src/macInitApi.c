@@ -211,10 +211,8 @@ tSirRetStatus macOpen(tHalHandle *pHalHandle, tHddHandle hHdd, tMacOpenParameter
      */
 
     /* Allocate pMac */
-    if (palAllocateMemory(hHdd, ((void **)&pMac), sizeof(tAniSirGlobal)) != eHAL_STATUS_SUCCESS){
-      printk("SBRISSEN macOpen1");
+    if (palAllocateMemory(hHdd, ((void **)&pMac), sizeof(tAniSirGlobal)) != eHAL_STATUS_SUCCESS)
         return eSIR_FAILURE;
-    }
 
     /* Initialize the pMac structure */
     palZeroMemory(hHdd, pMac, sizeof(tAniSirGlobal));
@@ -233,16 +231,12 @@ tSirRetStatus macOpen(tHalHandle *pHalHandle, tHddHandle hHdd, tMacOpenParameter
 
     {
         /* Call various PE (and other layer init here) */
-        if( eSIR_SUCCESS != logInit(pMac)){
-          printk("SBRISSEN macOpen2");
-              return eSIR_FAILURE;
-        }
+        if( eSIR_SUCCESS != logInit(pMac))
+           return eSIR_FAILURE;
 
         /* Call routine to initialize CFG data structures */
-        if( eSIR_SUCCESS != cfgInit(pMac) ){
-          printk("SBRISSEN macOpen3");
+        if( eSIR_SUCCESS != cfgInit(pMac) )
             return eSIR_FAILURE;
-        }
 
         sysInitGlobals(pMac);
     }
