@@ -2455,7 +2455,7 @@ static struct snd_soc_dai_link msm_dai[] = {
 		 * Rx is fed as reference for EC, the config of this DAI is
 		 * based on that of the Rx path.
 		 */
-		.be_hw_params_fixup = msm_slim_0_stub_rx_be_hw_params_fixup,
+		.be_hw_params_fixup = msm_slim_0_rx_be_hw_params_fixup,
 		.ops = &msm_be_ops,
 	},
 	{

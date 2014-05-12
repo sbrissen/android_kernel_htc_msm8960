@@ -90,9 +90,10 @@ const char *get_partition_name_by_num(int partnum)
 	struct mtd_partition *ptn = msm_nand_partitions;
 	int i;
 
-	for (i = 0; i < MSM_MAX_PARTITIONS && ptn->name; i++, ptn++)
+	for (i = 0; i < MSM_MAX_PARTITIONS && ptn->name; i++, ptn++) {
 		if (ptn->offset == partnum)
 			return ptn->name;
+	}
 	return NULL;
 }
 EXPORT_SYMBOL(get_partition_name_by_num);

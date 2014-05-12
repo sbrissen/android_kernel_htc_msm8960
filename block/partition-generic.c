@@ -20,6 +20,10 @@
 
 #include "partitions/check.h"
 
+#ifdef CONFIG_MACH_HTC
+#include <mach/board-ext-htc.h>
+#endif
+
 #ifdef CONFIG_BLK_DEV_MD
 extern void md_autodetect_dev(dev_t dev);
 #endif

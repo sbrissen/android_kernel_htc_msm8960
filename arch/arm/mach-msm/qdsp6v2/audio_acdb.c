@@ -207,6 +207,11 @@ int get_hw_delay(int32_t path, struct hw_delay_entry *entry)
 	else
 		pr_err("ACDB=> %s Invalid path: %d\n",__func__,path);
 
+    if(delay == NULL)
+    	pr_info("%s: delay is NULL",__func__);
+    
+	pr_info("%s: delay->entries: %i",__func__,delay->num_entries);
+
 	if ((delay == NULL) || ((delay != NULL) && delay->num_entries == 0)) {
 		pr_err("ACDB=> %s Invalid delay/ delay entries\n", __func__);
 		result = -EINVAL;
