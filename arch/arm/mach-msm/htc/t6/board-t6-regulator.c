@@ -68,7 +68,7 @@ VREG_CONSUMERS(L9) = {
 VREG_CONSUMERS(L10) = {
 	REGULATOR_SUPPLY("8921_l10",		NULL),
 	REGULATOR_SUPPLY("iris_vddpa",		"wcnss_wlan.0"),
-//	REGULATOR_SUPPLY("8921_l10",		"cable_detect.0"),
+	REGULATOR_SUPPLY("8921_l10",		"cable_detect.0"),
 };
 VREG_CONSUMERS(L11) = {
 	REGULATOR_SUPPLY("8921_l11",		NULL),
@@ -147,7 +147,7 @@ VREG_CONSUMERS(S1) = {
 VREG_CONSUMERS(S2) = {
 	REGULATOR_SUPPLY("8921_s2",		NULL),
 	REGULATOR_SUPPLY("iris_vddrfa",		"wcnss_wlan.0"),
-//	REGULATOR_SUPPLY("8921_s2",		"cable_detect.0"),
+	REGULATOR_SUPPLY("8921_s2",		"cable_detect.0"),
 };
 VREG_CONSUMERS(S3) = {
 	REGULATOR_SUPPLY("8921_s3",		NULL),
@@ -534,14 +534,14 @@ t6_rpm_regulator_init_data[] __devinitdata = {
 
 	
 	RPM_VS(LVS1, 0, 1, 0,                   "8921_s4"),
-    
+    RPM_VS(LVS2, 0, 1, 0,                   "8921_s1"),   
 	RPM_VS(LVS3, 0, 1, 0,                   "8921_s4"),
 	RPM_VS(LVS4, 0, 1, 0,                   "8921_s4"),
 	RPM_VS(LVS5, 0, 1, 0,                   "8921_s4"),
 	RPM_VS(LVS6, 0, 1, 0,                   "8921_s4"),
 	RPM_VS(LVS7, 0, 1, 1,                   "8921_s4"),
 
-	RPM_VS(LVS2, 0, 1, 0,                   "8921_s1"),
+	
 	
 	RPM_NCP(NCP, 0,    0, 1800000, 1800000, "8921_l6", 1p60),
 };
