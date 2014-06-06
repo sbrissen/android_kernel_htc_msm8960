@@ -462,7 +462,7 @@ static const struct file_operations ram_console_file_ops = {
 static int __init ram_console_late_init(void)
 {
 	struct proc_dir_entry *entry;
-printk("SBRISSEN - ram_console_late_init");
+
 	if (ram_console_old_log == NULL)
 		return 0;
 #ifdef CONFIG_ANDROID_RAM_CONSOLE_EARLY_INIT
