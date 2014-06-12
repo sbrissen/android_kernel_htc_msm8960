@@ -5451,7 +5451,6 @@ static VOS_STATUS hdd_update_config_from_nv(hdd_context_t* pHddCtx)
 
 
    return VOS_STATUS_SUCCESS;
-#endif
 }
 
 /**---------------------------------------------------------------------------
